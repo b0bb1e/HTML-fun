@@ -1,0 +1,22 @@
+table {
+  width: 50%;
+  margin: auto;
+}
+
+button {
+  width: 100%;
+  height: 20px;
+}
+
+#title {
+  border: 2px dashed purple;
+  text-align: center;
+}
+
+#display{
+  border: 5px solid gray;
+  background-color: lightgray;
+  width: 50%;
+  height: 16px;
+  margin: auto;
+}
