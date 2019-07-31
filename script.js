@@ -36,6 +36,7 @@ window.onload = function() {
 function addToDisplay(toAdd) {
   // move the working index forwards
   currentIndex++
+  indexForward()
   // for reference purposes
   old = document.getElementById("display").innerHTML
   // figure out and assign new string
@@ -50,10 +51,10 @@ var numClicked = function() {
 }
 
 var basicOpClicked = function() {
+  console.log(equation[currentIndex])
   // basic ops just need to check that they're coming after a number and not another operation
-  if (!isNaN(equation[currentIndex])) {
+  if (!isNaN(equation[currentIndex]) || equation[currentIndex] == ")") {
     addToDisplay(this.innerHTML)
-    console.log(equation)
   }
 }
 
@@ -75,16 +76,24 @@ function numContains(char) {
 
 var parenClicked = function() {
   // if everything checks out
-  if ((this.innerHTML === "(" && isNaN(equation[equation.length - 1])) || numContains("(") > numContains(")"))  {
+  if ((this.innerHTML === "(" && isNaN(equation[equation.length - 1])) || (this.innerHTML === ")" && numContains("(") > numContains(")")))  {
     addToDisplay(this.innerHTML)
     // if it would make too many close parentheses
   } else if (numContains("(") > numContains(")")){
     alert("Can't close a parentheses that wasn't opened!")
     // if the parentheses would come right after a number
-  } else {
+  } else if (this.innerHTML === "(" && !isNaN(equation[equation.length - 1])) {
     addToDisplay("x")
     addToDisplay(this.innerHTML)
   }
+}
+
+function indexForward() {
+  document.getElementById("extra-spaces").innerHTML = "$" + document.getElementById("extra-spaces").innerHTML
+}
+
+function indexBackwards() {
+  document.getElementById("extra-spaces").innerHTML = document.getElementById("extra-spaces").innerHTML.slice(1)
 }
 
 // takes the long strings of numbers in 'equation' and make them one number
@@ -195,6 +204,17 @@ function parseEquation(eq) {
   return eq[0]
 }
 
+function uncondenseEquation(answer) {
+  // make the number a string
+  answer = "" + answer
+  stretched = []
+  // stick each character of string in an array
+  for (var i = 0; i < answer.length; i++) {
+    stretched.push(answer[i])
+  }
+  return stretched
+}
+
 var equalsClicked = function() {
   // if the equation ends in an operator (that isn't a close parentheses)
   if (isNaN(equation.slice(-1)[0]) && equation.slice(-1)[0] != ")") {
@@ -211,33 +231,55 @@ var equalsClicked = function() {
   }
 
   // condense the equation (put long numbers together)
-  equation = condenseEquation()
-  // set the display to the answer
-  document.getElementById("display").innerHTML = parseEquation(equation)
+  equation = condenseEquation(equation)
+  // find and use the answer
+  answer = parseEquation(equation)
+  document.getElementById("display").innerHTML = answer
+  // stretch the equation out
+  equation = uncondenseEquation(answer)
+  // reset the underline that shows the current index
+  currentIndex = document.getElementById("display").innerHTML.length - 1
+  document.getElementById("extra-spaces").innerHTML = ""
+  for (var i = 0; i < document.getElementById("display").innerHTML.length; i++){
+    indexForward()
+  }
+  console.log(currentIndex)
+  console.log(equation)
 }
 
 var clearClicked = function() {
   // reset display and in-code equivalent
-  document.getElementById("display").innerHTML = "0"
+  document.getElementById("display").innerHTML = ""
   equation = [0]
   currentIndex = -1
+  document.getElementById("extra-spaces").innerHTML = ""
 }
 
 var deleteClicked = function() {
-  // for reference purposes
-  old = document.getElementById("display").innerHTML
-  // figure out and assign new string (with deleted char)
-  document.getElementById("display").innerHTML = old.substr(0, currentIndex) + old.substr(currentIndex + 1)
-  // delete from the in-code equivalent
-  equation.splice(currentIndex, 1)
+  if (currentIndex == equation.length - 1 && currentIndex > 0) {
+    document.getElementById("display").innerHTML = document.getElementById("display").innerHTML.substr(0, currentIndex)
+    // delete from the in-code equivalent
+    equation.pop()
+    currentIndex -= 1
+    indexBackwards()
+  } else if (currentIndex != equation.length - 1 && currentIndex >= 0) {
+    // for reference purposes
+    old = document.getElementById("display").innerHTML
+    // figure out and assign new string (with deleted char)
+    document.getElementById("display").innerHTML = old.substr(0, currentIndex + 1) + old.substr(currentIndex + 2)
+    equation.splice(currentIndex + 1, 1)
+  }
 }
 
 var iMoverClicked = function() {
   // if it's a valid right click go right
-  if (this.id === "index-right" && currentIndex < equations.length) {
+  if (this.id === "index-right" && currentIndex < equation.length) {
     currentIndex++
+    document.getElementById("index-display").innerHTML = " " + document.getElementById("index-display").innerHTML
   // same for left
   } else if (this.id === "index-left" && currentIndex > 0) {
-    currentIndex--
+    console.log(currentIndex)
+    currentIndex -= 1
+    indexBackwards()
   }
 }
