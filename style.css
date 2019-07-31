@@ -13,10 +13,32 @@ button {
   text-align: center;
 }
 
-#display{
+#display-div {
   border: 5px solid gray;
   background-color: lightgray;
+  font-family: monospace;
   width: 50%;
   height: 16px;
   margin: auto;
+}
+
+#display-div p{
+  margin: 0;
+  position: absolute;
+  display: block;
+  float: left;
+  width: 49%;
+}
+
+#display{
+  z-index: 2
+}
+
+#index-display{
+  z-index: 1;
+  border: 1px solid black;
+}
+
+#extra-spaces{
+  color: lightgray;
 }
