@@ -36,7 +36,7 @@ button {
 
 #index-display{
   z-index: 1;
-  border: 1px solid black;
+  border: 1px solid black; 
 }
 
 #extra-spaces{
