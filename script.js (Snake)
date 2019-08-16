@@ -1,0 +1,249 @@
+// global variables
+
+// giant array with all of the cells of the field
+var cells = []
+// array with all of the [i][j] locations of the snake cells in the 'cells' array, as [i, j]
+var snake = []
+// the last useful key pressed
+var lastKey = 97
+// variables for the setIntervals
+var m = undefined
+var f = undefined
+var highScore = 0
+// the game is not running right now
+var game = false
+
+// when it starts
+window.onload = function() {
+  // hide the score h2s to start
+  document.getElementsByTagName('body')[0].className = 'hideScores'
+
+  // setting up the giant array of cells (which is an array of arrays)
+  for (let i = 0, rows = document.getElementsByTagName('TR'); i < rows.length; i++) {
+    // start the array for this row
+    let row = []
+
+    for (let j = 0, boxes = rows[i].getElementsByTagName('TD'); j < boxes.length; j++) {
+      // add the individual cell to this row's array
+      row.push(boxes[j])
+    }
+    // add this row's array to the master 'cells' array
+    cells.push(row)
+  }
+  
+  // organizing the cells into catergories
+  for (let i = 0, n = cells.length; i < n; i++) {
+    for (let j = 0, n = cells[i].length; j < n; j++) {
+      // if it's the middle cell, it starts as a snake cell
+      if (i === Math.floor(cells.length / 2) && j === Math.floor(cells[i].length / 2)) {
+        cells[i][j].className = 'snake'
+        snake.push([i, j])
+      }
+
+      // if it's on the edge, it starts as a border cell
+      else if (i === 0 || i === cells.length - 1 || j === 0 || j === cells.length - 1) {
+        cells[i][j].className = 'border'
+      }
+
+      // otherwise, it's just 'grass' or background
+      else {
+        cells[i][j].className = 'grass'
+      }
+    }
+  }
+}
+
+// when a key is pressed
+window.onkeypress = function(event) {
+  // store the ascii code of the pressed key
+  newKey = event.charCode
+
+  // if it's a useful key (WASD during game, spacebar when waiting for game to start)
+  if ((game && (newKey === 97 || newKey === 65 || newKey === 100 || newKey === 68 || 
+                newKey === 119 || newKey === 87 || newKey === 115 || newKey === 83)) || 
+      (!game && newKey === 32)) {
+    // store it in the global variable
+    lastKey = newKey
+  }
+
+  // if the game isn't going and spacebar was pressed (this is starting the game)
+  if (!game && lastKey === 32) {
+    // hide the score h2s
+    document.getElementsByTagName('body')[0].className = 'hideScores'
+
+    // reset the board
+    resetSnake()
+    reset('fruit')
+
+    // note that the game is happening
+    game = true
+
+    // start the game
+    startGame()
+  }
+}
+
+// fuction to start the game
+function startGame() {
+  // at the beginning, the snake moves left
+  lastKey = 97
+
+  // start the two intervals and store their stop codes in the global variables
+  m = setInterval(move, 250 - snake.length * 10)
+  f = setInterval(newFruit, 1000)
+}
+
+// function to end the game
+function endGame() {
+  // stop both intervals (moving and fruit making)
+  clearInterval(m)
+  clearInterval(f)
+
+  // add score to the score h2
+  document.getElementById('score').innerHTML = 'Your score is ' + snake.length
+
+  // if this is a high score
+  if (snake.length > highScore) {
+    // celebrate in the highScore h2
+    document.getElementById('highScore').innerHTML = 'Congradulations, you beat the high score!'
+    // change the high score
+    highScore = snake.length
+  }
+
+  // if it isn't, the highScore h2 has the high score
+  else {
+    document.getElementById('highScore').innerHTML = 'The high score is ' + highScore
+  }
+
+  // show the score h2s
+  document.getElementsByTagName('body')[0].className = 'showScores'
+
+  // the game is not currently running
+  game = false
+}
+
+// function to determine the number of fruits already present
+function numFruits() {
+  // counter variable
+  let fruits = 0
+
+  // check each row...
+  cells.forEach(function(row) {
+    // and each cell in that row
+    row.forEach(function(cell) {
+      // incremet counter if it is a fruit
+      if (cell.className === 'fruit') {
+        fruits++
+      }
+    })
+  })
+
+  // return the coutner
+  return fruits
+}
+
+// function to make a new fruit (run in a setInterval)
+var newFruit = function() {
+  // if there aren't too many fruits
+  if (numFruits() < 10) {
+    // reference variable
+    let openGrass = document.getElementsByClassName('grass')
+
+    // randomely pick a grass cell
+    let fruit = openGrass[Math.floor(Math.random() * openGrass.length)]
+    
+    // put a fruit image in the cell and set its class to fruit
+    fruit.innerHTML = '<img src="apple.png" width="25px" height="25px">'
+    fruit.className = 'fruit'
+  }
+}
+
+// function to find the cell (td pointer) that the snake would be moving into
+// given its front cell and the global 'last useful key pressed' variable
+function findNewSpot(front) {
+  // a and A handling
+  if (lastKey === 97 || lastKey === 65) {
+    newSpot = [front[0], front[1] - 1]
+  }
+
+  // d and D handling
+  else if (lastKey === 100 || lastKey === 68) {
+    newSpot = [front[0], front[1] + 1]
+  }
+
+  // w and W handling
+  else if (lastKey === 119 || lastKey === 87) {
+    newSpot = [front[0] - 1, front[1]]
+  }
+
+  // s and S handling
+  else if (lastKey === 115 || lastKey === 83) {
+    newSpot = [front[0] + 1, front[1]]
+  }
+
+  // return the pointer
+  return cells[newSpot[0]][newSpot[1]]
+}
+
+
+// function to move the snake (run in a setInterval)
+var move = function() {
+  // find out which cell the snake would be moving into
+  let check = findNewSpot(snake[snake.length - 1])
+
+  // if the snake ran into itself or the wall
+  if (check.className === 'border' || check.className === 'snake') {
+    // end the game
+    endGame()
+  }
+
+  // if the snake ran into a fruit
+  else if (check.className === 'fruit') {
+    // add this new spot to the snake array
+    snake.push(newSpot)
+    // and make it a snake spot
+    check.className = 'snake'
+    
+    // get rid of the fruit image
+    check.innerHTML = ''
+  }
+
+  // otherwise (it ran into grass)
+  else {
+    // the end of the snake is now grass
+    cells[snake[0][0]][snake[0][1]].className = 'grass'
+    // remove it from the snake array
+    snake.splice(0, 1)
+
+    // add this new spot to the snake array
+    snake.push(newSpot)
+    // and make it a snake spot
+    check.className = 'snake'
+  }
+}
+
+// function to reset a particular class to grass
+function reset(what) {
+  // reference varaible with the list of cells of that class
+  let toReset = document.getElementsByClassName(what)
+
+  // for as many times as there are cells
+  for (let i = 0, n = toReset.length; i < n; i++) {
+    // for the first cell in the list (because they will all be first, as each is deleted)
+    // delete the fruit picture (if there is one)
+    toReset[0].innerHTML = ''
+    // make it as grass cell
+    toReset[0].className = 'grass'
+  }
+}
+
+// function to fully reset the snake
+function resetSnake() {
+  // get rid of all the old snake cells
+  reset('snake')
+  
+  // make the middle cell a snake cell
+  cells[Math.floor(cells.length / 2)][Math.floor(cells[0].length / 2)].className = 'snake'
+  // add the middle cell to the snake array
+  snake = [[Math.floor(cells.length / 2), Math.floor(cells[0].length / 2)]]
+}
