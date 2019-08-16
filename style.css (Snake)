@@ -1,0 +1,50 @@
+/* all of the text is centered */
+body {
+  text-align: center;
+}
+
+/* making the table have no spaces between cells (for smooth grass look) */
+table {
+  border: none;
+  margin: auto;
+}
+
+tr {
+  display: block;
+}
+
+td {
+  display: block;
+  float: left;
+  padding: 0;
+  border: none;
+  margin: 0;
+  /* the size of the cells */
+  height: 25px;
+  width: 25px;
+}
+
+/* styles for certain types of cells */
+.border {
+  background-color: gray;
+  border: 1px solid black;
+  width: 23px;
+  height: 23px;
+}
+
+.grass, .fruit {
+  background-color: lightgreen;
+}
+
+.snake {
+  background-color: purple;
+}
+
+/* allowing the score h2s to show or hide */
+.showScores .scoring {
+  visibility: visible;
+}
+
+.hideScores .scoring {
+  visibility: hidden
+}
