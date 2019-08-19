@@ -59,11 +59,11 @@ td img {
   width: 23px;
 }
 
-/* allowing the score h2s to show or hide */
-.showScores .scoring {
-  visibility: visible;
+/* allowing the proper scores/instructions to show or hide */
+.pregame #preGameInstructions, .postGame .scoring, .game #gameInstructions {
+  display: display;
 }
 
-.hideScores .scoring {
-  visibility: hidden
+.preGame .scoring, .preGame #gameInstructions, .game #preGameInstructions, .game .scoring, .postGame #preGameInstructions, .postGame #gameInstructions {
+  display: none;
 }
