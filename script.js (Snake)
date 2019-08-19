@@ -1,5 +1,7 @@
 // global variables
 
+// size of the board [width, length]
+size = [10, 10]
 // giant array with all of the cells of the field
 var cells = []
 // array with all of the [i][j] locations of the snake cells in the 'cells' array, as [i, j]
@@ -9,48 +11,23 @@ var lastKey = 97
 // variables for the setIntervals
 var m = undefined
 var f = undefined
+// highest score this runtime
 var highScore = 0
 // the game is not running right now
 var game = false
 
-// when it starts
+// function that funs when the program starts
 window.onload = function() {
   // hide the score h2s to start
   document.getElementsByTagName('body')[0].className = 'hideScores'
 
-  // setting up the giant array of cells (which is an array of arrays)
-  for (let i = 0, rows = document.getElementsByTagName('TR'); i < rows.length; i++) {
-    // start the array for this row
-    let row = []
+  // make the board the pre-game size
+  setUpBoard()
+  // set up the cell array
+  makeCellArray()
 
-    for (let j = 0, boxes = rows[i].getElementsByTagName('TD'); j < boxes.length; j++) {
-      // add the individual cell to this row's array
-      row.push(boxes[j])
-    }
-    // add this row's array to the master 'cells' array
-    cells.push(row)
-  }
-  
-  // organizing the cells into catergories
-  for (let i = 0, n = cells.length; i < n; i++) {
-    for (let j = 0, n = cells[i].length; j < n; j++) {
-      // if it's the middle cell, it starts as a snake cell
-      if (i === Math.floor(cells.length / 2) && j === Math.floor(cells[i].length / 2)) {
-        cells[i][j].className = 'snake'
-        snake.push([i, j])
-      }
-
-      // if it's on the edge, it starts as a border cell
-      else if (i === 0 || i === cells.length - 1 || j === 0 || j === cells.length - 1) {
-        cells[i][j].className = 'border'
-      }
-
-      // otherwise, it's just 'grass' or background
-      else {
-        cells[i][j].className = 'grass'
-      }
-    }
-  }
+  // set the board to the pre-game configuration
+  setUpPreGame()
 }
 
 // when a key is pressed
@@ -73,7 +50,7 @@ window.onkeypress = function(event) {
 
     // reset the board
     resetSnake()
-    reset('fruit')
+    reset(intoArray(document.getElementsByClassName('fruit')), true)
 
     // note that the game is happening
     game = true
@@ -83,83 +60,57 @@ window.onkeypress = function(event) {
   }
 }
 
-// fuction to start the game
-function startGame() {
-  // at the beginning, the snake moves left
-  lastKey = 97
-
-  // start the two intervals and store their stop codes in the global variables
-  m = setInterval(move, 250 - snake.length * 10)
-  f = setInterval(newFruit, 1000)
-}
-
-// function to end the game
-function endGame() {
-  // stop both intervals (moving and fruit making)
-  clearInterval(m)
-  clearInterval(f)
-
-  // add score to the score h2
-  document.getElementById('score').innerHTML = 'Your score is ' + snake.length
-
-  // if this is a high score
-  if (snake.length > highScore) {
-    // celebrate in the highScore h2
-    document.getElementById('highScore').innerHTML = 'Congradulations, you beat the high score!'
-    // change the high score
-    highScore = snake.length
-  }
-
-  // if it isn't, the highScore h2 has the high score
-  else {
-    document.getElementById('highScore').innerHTML = 'The high score is ' + highScore
-  }
-
-  // show the score h2s
-  document.getElementsByTagName('body')[0].className = 'showScores'
-
-  // the game is not currently running
-  game = false
-}
-
-// function to determine the number of fruits already present
-function numFruits() {
-  // counter variable
-  let fruits = 0
-
+// function to run a function on each cell (just like forEach, but runs on each cell in an array of arrays)
+function forEachCell(func) {
   // check each row...
   cells.forEach(function(row) {
     // and each cell in that row
-    row.forEach(function(cell) {
-      // incremet counter if it is a fruit
-      if (cell.className === 'fruit') {
-        fruits++
-      }
-    })
+    row.forEach(func)
   })
-
-  // return the coutner
-  return fruits
 }
 
-// function to make a new fruit (run in a setInterval)
-var newFruit = function() {
-  // if there aren't too many fruits
-  if (numFruits() < 10) {
-    // reference variable
-    let openGrass = document.getElementsByClassName('grass')
+// function to return a random integer in the accepted RGB range (0 - 255)
+function randomRGB() {
+  return Math.floor(Math.random() * 255)
+}
 
-    // randomely pick a grass cell
-    let fruit = openGrass[Math.floor(Math.random() * openGrass.length)]
-    
-    // put a fruit image in the cell and set its class to fruit
-    fruit.innerHTML = '<img src="apple.png" width="25px" height="25px">'
-    fruit.className = 'fruit'
+// function to write a word one letter at a time in a given row
+function writeWord(word, row) {
+  // starting in the leftmost cell of the given row, place one letter of the word at a time
+  for (let i = 0, n = word.length; i < n && i < cells[row].length; i++) {
+    cells[row][i].innerHTML = word[i]
   }
 }
 
+// function to figure out which row a cell is in
+function findCoordinates(cell) {
+  // check each row
+  for (let i = 0, n = cells.length; i < n; i++) {
+    // and each cell in that row
+    for (let j = 0, n = cells[i].length; j < n; j++) {
+      // if this cell is the one we're looking for
+      if (cell === cells[i][j]) {
+        // return which row it's in
+        return [i, j]
+      }
+    }
+  }
+}
+
+// function to return an array containing every other cell in a row, starting with the first one
+function everyOtherCell(row) {
+  // variable that will be returned
+  let arr = []
+
+  // add every other cell in this row to the return array
+  for (let i = 0, n = cells[row].length; i < n; i += 2) {
+    arr.push(cells[row][i])
+  }
+  // return the array
+  return arr
+}
+
 // function to find the cell (td pointer) that the snake would be moving into
-// given its front cell and the global 'last useful key pressed' variable
 function findNewSpot(front) {
   // a and A handling
   if (lastKey === 97 || lastKey === 65) {
@@ -185,6 +136,213 @@ function findNewSpot(front) {
   return cells[newSpot[0]][newSpot[1]]
 }
 
+// function to make the weird DOM pointer thingies into proper arrays
+function intoArray(dom) {
+  // return variable
+  arr = []
+
+  // add each item in the DOM to the return array
+  for (let i = 0, n = dom.length; i < n; i++) {
+    arr.push(dom[i])
+  }
+  // return the much more useful array
+  return arr
+}
+
+// function to add a new cell to the snake
+function newSnake(cell) {
+  // add new cell to snake array
+  snake.push(findCoordinates(cell))
+  // make it look like a snake cell
+  cell.className = 'snake'
+}
+
+// function to determine the number of fruits already present
+function numFruits() {
+  // counter variable
+  let fruits = 0
+
+  // check each cell
+  forEachCell(function(cell) {
+    // increment counter if it is a fruit
+    if (cell.className === 'fruit') {
+      fruits++
+    }
+  })
+
+  // return the coutner
+  return fruits
+}
+
+// function that runs when the user selects one of the sizes
+var selectSize = function() {
+  // figure out which set this cell is in
+  let row = Math.floor(findCoordinates(this)[0] / 3)
+
+  // reset only this set of sizes
+  reset(cells[row * 3 + 1])
+  reset(cells[row * 3 + 2])
+
+  // the clicked cell looks selected, and the size array is update with its value
+  this.className = 'selected-size'
+  size[row] = this.innerHTML
+}
+
+// function that runs when the user selects of the colors
+var selectColor = function() {
+  // figure out which row the cell is in
+  let row = findCoordinates(this)[0]
+  // reset all of the other color cells in that row
+  reset(everyOtherCell(row), false, 'unselected-color')
+
+  // make the color look selected, and set the snake-color CSS variable to this cell's background color
+  this.className = 'selected-color'
+  document.documentElement.style.setProperty('--snake-color', this.style.background)
+}
+
+// function to show the sizes to choose from
+function showSizes(name, startRow) {
+  // write the name of this size
+  writeWord(name, startRow)
+
+  // for each cell in the two rows below the start row
+  for (let i = 0, n = cells[startRow + 1].length * 2; i < n; i++) {
+    // figure out which row we're in
+    let row = Math.floor(i / (n / 2))
+
+    // give the proper cell its size value and the right onclick
+    cells[startRow + 1 + row][i - n / 2 * row].innerHTML = i + 7
+    cells[startRow + 1 + row][i - n / 2 * row].onclick = selectSize
+  }
+}
+
+// function to show the colors to choose from
+function showColors(startRow) {
+  // the name of this selecor
+  let name = 'COLORS'
+  // write the name of this selector
+  writeWord(name, startRow)
+
+  // for every other cell two rows down from the start row
+  for (let i = 0, n = Math.floor(cells[startRow + 1].length / 2); i < n; i++) {
+    // set the background to a random color
+    cells[startRow + 2][i * 2].style.background = 'rgb(' + randomRGB() + ', ' + randomRGB() + ', ' + randomRGB() + ')'
+    // set up the click ability, and note that this color is not selected
+    cells[startRow + 2][i * 2].className = 'unselected-color'
+    cells[startRow + 2][i * 2].onclick = selectColor
+  }
+}
+
+// function to create the desired number of rows and columns in the tbody tag
+function setUpBoard() {
+  // reference variable for where the new HTML is going
+  table = document.getElementsByTagName('tbody')[0]
+  // reset it (in case there was anything in there before)
+  table.innerHTML = ''
+
+  // make as many rows as the first size value, height, says so
+  for (let i = 0; i < size[0]; i++) {
+    // start this row with an open-tr tag
+    let row = '<tr>'
+    
+    // make as many columns in that row as the second size value, width, says so
+    for (let j = 0; j < size[1]; j++) {
+      // add a complete empty td tag to this row
+      row += '<td></td>'
+    }
+    // add the completed row plus a closing tag to the tbody
+    table.innerHTML += row + '</tr>'
+  }
+}
+
+// function to set up the giant array of cells (which is an array of arrays)
+function makeCellArray() {
+  // clear the array
+  cells = []
+
+  for (let i = 0, rows = document.getElementsByTagName('TR'); i < rows.length; i++) {
+    // start the array for this row
+    let row = []
+
+    for (let j = 0, boxes = rows[i].getElementsByTagName('TD'); j < boxes.length; j++) {
+      // add the individual cell to this row's array
+      row.push(boxes[j])
+    }
+    // add this row's array to the master 'cells' array
+    cells.push(row)
+  }
+}
+
+// function to set up the pregame board by displaying all of the selectors
+function setUpPreGame() {
+  // all cells are initally grass
+  forEachCell(function(cell) {
+    cell.className = 'grass'
+  })
+
+  // display the selectors
+  showSizes('HEIGHT', 0)
+  showSizes('WIDTH', 3)
+  showColors(6)
+
+  // make the lower right corner into a play button - clicking it starts the game
+  lrCorner = cells[cells.length - 1][cells[cells.length - 1].length - 1]
+  lrCorner.innerHTML = 'play'
+  lrCorner.style.background = 'lightcoral'
+  lrCorner.onclick = setUpGame
+}
+
+// function to set up the game's board by organizing all of the cells into catergories
+var setUpGame = function() {
+  console.log(size)
+  setUpBoard()
+  makeCellArray()
+  for (let i = 0, n = cells.length; i < n; i++) {
+    for (let j = 0, l = cells[i].length; j < l; j++) {
+      // if it's the middle cell, it starts as a snake cell
+      if (i === Math.floor(cells.length / 2) && j === Math.floor(cells[i].length / 2)) {
+        cells[i][j].className = 'snake'
+        snake.push([i, j])
+      }
+
+      // if it's on the edge, it starts as a border cell
+      else if (i === 0 || i === cells.length - 1 || j === 0 || j === cells[i].length - 1) {
+        cells[i][j].className = 'border'
+      }
+
+      // otherwise, it's just 'grass' or background
+      else {
+        cells[i][j].className = 'grass'
+      }
+    }
+  }
+}
+
+// fuction to start the game
+function startGame() {
+  // at the beginning, the snake moves left
+  lastKey = 97
+
+  // start the two intervals and store their stop codes in the global variables
+  m = setInterval(move, 250 * 0.95)
+  f = setInterval(newFruit, 1000)
+}
+
+// function to make a new fruit (run in a setInterval)
+var newFruit = function() {
+  // if there aren't too many fruits
+  if (numFruits() < 5) {
+    // reference variable
+    let openGrass = document.getElementsByClassName('grass')
+
+    // randomely pick a grass cell
+    let fruit = openGrass[Math.floor(Math.random() * openGrass.length)]
+    
+    // put a fruit image in the cell and set its class to fruit
+    fruit.innerHTML = '<img src="apple.png">'
+    fruit.className = 'fruit'
+  }
+}
 
 // function to move the snake (run in a setInterval)
 var move = function() {
@@ -199,48 +357,83 @@ var move = function() {
 
   // if the snake ran into a fruit
   else if (check.className === 'fruit') {
-    // add this new spot to the snake array
-    snake.push(newSpot)
-    // and make it a snake spot
-    check.className = 'snake'
+    // add the new cell to the snake
+    newSnake(check)
     
+    // stop the move clock, and then set it again but faster
+    clearInterval(m)
+    m = setInterval(move, 250 * Math.pow(0.95, snake.length))
+
     // get rid of the fruit image
     check.innerHTML = ''
   }
 
   // otherwise (it ran into grass)
   else {
-    // the end of the snake is now grass
-    cells[snake[0][0]][snake[0][1]].className = 'grass'
-    // remove it from the snake array
-    snake.splice(0, 1)
+    // add the new cell to the snake
+    newSnake(check)
 
-    // add this new spot to the snake array
-    snake.push(newSpot)
-    // and make it a snake spot
-    check.className = 'snake'
+    // the tail end of the snake is no longer snake
+    cells[snake[0][0]][snake[0][1]].className = 'grass'
+    snake.splice(0, 1)
   }
 }
 
-// function to reset a particular class to grass
-function reset(what) {
-  // reference varaible with the list of cells of that class
-  let toReset = document.getElementsByClassName(what)
+// function to end the game
+function endGame() {
+  // stop both intervals (moving and fruit making)
+  clearInterval(m)
+  clearInterval(f)
 
-  // for as many times as there are cells
-  for (let i = 0, n = toReset.length; i < n; i++) {
-    // for the first cell in the list (because they will all be first, as each is deleted)
-    // delete the fruit picture (if there is one)
-    toReset[0].innerHTML = ''
-    // make it as grass cell
-    toReset[0].className = 'grass'
+  // reference variable
+  let score = snake.length
+
+  // add score to the score h2
+  document.getElementById('score').innerHTML = 'Your score is ' + score
+
+  // if the user got the max score, recognize that
+  if (score === ((size[0] - 1) * (size[1] - 1))) {
+    document.getElementById('score').innerHTML += ', the max score!'
+  }
+
+  // if this is a high score
+  if (score > highScore) {
+    // celebrate in the highScore h2
+    document.getElementById('highScore').innerHTML = 'Congradulations, you beat the high score!'
+    // change the high score
+    highScore = score
+  }
+
+  // if it isn't, the highScore h2 has the high score
+  else {
+    document.getElementById('highScore').innerHTML = 'The high score is ' + highScore
+  }
+
+  // show the score h2s
+  document.getElementsByTagName('body')[0].className = 'showScores'
+
+  // the game is not currently running
+  game = false
+}
+
+// function to reset an arr of cells
+function reset(arr, clearInner=false, resetTo='grass') {
+  // for each cell
+  for (let i = 0, n = arr.length; i < n; i++) {
+    // delete what's in the cell if required
+    if (clearInner) {
+      arr[i].innerHTML = ''
+    }
+
+    // reset it to the desired class
+    arr[i].className = resetTo
   }
 }
 
 // function to fully reset the snake
 function resetSnake() {
   // get rid of all the old snake cells
-  reset('snake')
+  reset(intoArray(document.getElementsByClassName('snake')), true)
   
   // make the middle cell a snake cell
   cells[Math.floor(cells.length / 2)][Math.floor(cells[0].length / 2)].className = 'snake'
