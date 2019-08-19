@@ -1,3 +1,8 @@
+/* varaible so the snake color can be changed at runtime */
+:root {
+  --snake-color: purple;
+}
+
 /* all of the text is centered */
 body {
   text-align: center;
@@ -5,23 +10,21 @@ body {
 
 /* making the table have no spaces between cells (for smooth grass look) */
 table {
-  border: none;
+  border-collapse: collapse;
   margin: auto;
 }
 
-tr {
-  display: block;
-}
-
+/* the size of the cells */
 td {
-  display: block;
-  float: left;
-  padding: 0;
-  border: none;
-  margin: 0;
-  /* the size of the cells */
   height: 25px;
   width: 25px;
+}
+
+/* makes sure the apple image doesn't expand the cell */
+td img {
+  display: block;
+  padding: 0;
+  margin: 0;
 }
 
 /* styles for certain types of cells */
@@ -36,8 +39,24 @@ td {
   background-color: lightgreen;
 }
 
+/* using a varaible allows this to change at runtime*/
 .snake {
-  background-color: purple;
+  background-color: var(--snake-color);
+}
+
+/* pre-game styles to show what is selected and what isn't */
+.selected-size {
+  background-color: lightcoral;
+}
+
+.unselected-color {
+  border: none;
+}
+
+.selected-color {
+  border: 1px solid black;
+  height: 23px;
+  width: 23px;
 }
 
 /* allowing the score h2s to show or hide */
