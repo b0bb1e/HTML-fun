@@ -18,8 +18,8 @@ var game = false
 
 // function that funs when the program starts
 window.onload = function() {
-  // hide the score h2s to start
-  document.getElementsByTagName('body')[0].className = 'hideScores'
+  // this is the pregame
+  document.getElementsByTagName('body')[0].className = 'preGame'
 
   // make the board the pre-game size
   setUpBoard()
@@ -45,8 +45,8 @@ window.onkeypress = function(event) {
 
   // if the game isn't going and spacebar was pressed (this is starting the game)
   if (!game && lastKey === 32) {
-    // hide the score h2s
-    document.getElementsByTagName('body')[0].className = 'hideScores'
+    // this is the game phase
+    document.getElementsByTagName('body')[0].className = 'game'
 
     // reset the board
     resetSnake()
@@ -294,9 +294,13 @@ function setUpPreGame() {
 
 // function to set up the game's board by organizing all of the cells into catergories
 var setUpGame = function() {
-  console.log(size)
+  // make the board cells
   setUpBoard()
+  // organize the board cells
   makeCellArray()
+
+  // this is the game phase
+  document.getElementsByTagName('body')[0].className = 'game'
   for (let i = 0, n = cells.length; i < n; i++) {
     for (let j = 0, l = cells[i].length; j < l; j++) {
       // if it's the middle cell, it starts as a snake cell
@@ -409,8 +413,8 @@ function endGame() {
     document.getElementById('highScore').innerHTML = 'The high score is ' + highScore
   }
 
-  // show the score h2s
-  document.getElementsByTagName('body')[0].className = 'showScores'
+  // this is the post game
+  document.getElementsByTagName('body')[0].className = 'postGame'
 
   // the game is not currently running
   game = false
