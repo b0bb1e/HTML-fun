@@ -1,55 +1,27 @@
 <!DOCTYPE html>
-<html lang="en-US">
+<html lang='en-US'>
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">
+    <meta charset='utf-8'>
+    <meta name='viewport' content='width=device-width'>
     <title>Snake</title>
-    <link href="style.css" rel="stylesheet" type="text/css">
+    <link href='style.css' rel='stylesheet' type='text/css'>
   </head>
   <body>
-    <script src="script.js"></script>
+    <script src='script.js'></script>
     <h1>SNAKE</h1>
+    <p id='preGameInstructions'>
+      Instructions:<br>
+      Select a width, length, and snake color and then click play<br>
+      Note that 7x7 will give you a 5x5 playing field due to the border cells
+    </p>
+    <!-- the game board is put into the tbody with js at runtime  -->
     <table>
-      <tr>
-        <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td>
-      </tr>
-      <tr>
-        <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td>
-      </tr>
-      <tr>
-        <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td>
-      </tr>
-      <tr>
-        <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td>
-      </tr>
-      <tr>
-        <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td>
-      </tr>
-      <tr>
-        <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td>
-      </tr>
-      <tr>
-        <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td>
-      </tr>
-      <tr>
-        <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td>
-      </tr>
-      <tr>
-        <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td>
-      </tr>
-      <tr>
-        <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td>
-      </tr>
-      <tr>
-        <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td>
-      </tr>
-      <tr>
-        <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td>
-      </tr>
+      <tbody>
+      </tbody>
     </table>
-    <h2 class="scoring" id="score">Your score is: </h2>
-    <h2 class="scoring" id="highScore"></h2>
-    <p>
+    <h2 class='scoring' id='score'>Your score is: </h2>
+    <h2 class='scoring' id='highScore'></h2>
+    <p id='gameInstructions'>
       Instructions:<br>
       WASD (up, left, down, right) to move<br>
       Press spacebar to start (the snake will immediately go left)<br>
