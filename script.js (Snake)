@@ -403,7 +403,7 @@ function endGame() {
   // if this is a high score
   if (score > highScore) {
     // celebrate in the highScore h2
-    document.getElementById('highScore').innerHTML = 'Congradulations, you beat the high score!'
+    document.getElementById('highScore').innerHTML = 'Congratulations, you beat the high score!'
     // change the high score
     highScore = score
   }
