@@ -5,4 +5,6 @@ I had time. It's summer! The first thing in here will be a calculator I whipped 
 
 I have now added a playable snake game (2 days to program)
 
+A school-year project now: 2048, but with Pikachus!
+
 To use these files: download the ones from your desired program (so only the 4 snake files, for example). Then get rid of the descriptor at the end of the filename (the " (Snake)" in my example). Then run!
