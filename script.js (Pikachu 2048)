@@ -1,0 +1,349 @@
+// global variables, used by multiple objects/functions
+
+// created on start, required for onclick reference
+var gameboard = undefined
+// the game is not playing right now
+var playing = false
+// score variable, all tiles must be able to access
+var score = 0
+// access strings for each pikachu picture, from smallest to largest value
+const pikachus = ['small-santa', 'small-witch', 'small-party', 'medium-santa', 'medium-witch', 'medium-party', 'medium-flower', 'medium-detective', 'large-santa', 'large-witch', 'large-party', 'large-flower', 'large-detective']
+
+// Tile class: used by the Board class
+class Tile {
+  //  a new Tile needs to know where it is
+  constructor(position) {
+    this.position = position
+    // tiles start with either a value of 2 or 4
+    this.value = (random(1) + 1) * 2
+  }
+
+  // method to return the type of collision it has with another tile, if at all
+  // MEANING OF RETURN CODES
+  // 0: this tile is myself
+  // 1: bumped into a tile of the same value, other tile's value is boosted
+  // 2: bumped into a tile of different value
+  // 3: did not bump into anything
+  collide(tile) {
+    // first, check if the tile is the same
+    if (tile === this) {
+      return 0
+    }
+
+    // then, check is the two (different) tiles have the same position (i.e. were moved on each other)
+    if (arraysEqual(tile.getPosition(), this.position)) {
+      // if so, check if the tiles have the same value
+      if (tile.getValue() === this.value) {
+        // if so, increment score and the other tile's value
+        score += this.value + tile.getValue()
+        tile.setValue(this.value + tile.getValue())
+        document.getElementById('score').innerHTML = 'Score: ' + score
+        return 1
+      }
+
+      // otherwise, this is a different-value tile
+      else {
+        return 2
+      }
+    }
+
+    // no collision at all
+    return 3
+  }
+  
+  // method for a tile to check if it is off the board
+  offBoard(width, height) {
+    // if off any side (compare own position against inputted width and height of board)
+    if (this.position[0] < 0 || this.position[1] < 0 || this.position[0] > height - 1 || this.position[1] > width - 1) {
+      return true
+    }
+
+    else {
+      return false
+    }
+  }
+
+  // method to move a tile a specified amount
+  move(direction) {
+    this.position[0] += direction[0]
+    this.position[1] += direction[1]
+  }
+
+  // method to make the tile show up, with a pikachu picture dependant on its value
+  display(board) {
+    board.cells[this.position[0]][this.position[1]].innerHTML = '<img src="images/' + pikachus[Math.log2(this.value) - 1] + '.png">'
+  }
+
+  // method to un-display a tile
+  clear(board) {
+    board.cells[this.position[0]][this.position[1]].innerHTML = ' '
+  }
+
+  // various getters and setters, needed for Tile or Board methods
+
+  // the position-setting function only sets one index at a time, so it needs the new position and its index
+  setPosition(index, position) {
+    this.position[index] = position
+  }
+
+  getPosition() {
+    return this.position
+  }
+
+  setValue(value) {
+    this.value = value
+  }
+
+  getValue() {
+    return this.value
+  }
+}
+
+// Board class: contains all methods needed to play the game, except ones dependant on ouside input (i.e. keyboard)
+class Board {
+  // a new Board need know nothing
+  constructor() {
+    // prepare the playing field (board) which the tiles will be on
+    this.cells = this.setUpBoard()
+    // the tiles that the board will use in play
+    this.tiles = []
+  }
+
+  // method to prepare an array containing all the tds in the table, organized by their trs
+  setUpBoard() {
+    // clear the array
+    let board = []
+
+    for (let i = 0, rows = document.getElementsByTagName('TR'); i < rows.length; i++) {
+      // start the array for this row
+      let row = []
+
+      for (let j = 0, boxes = rows[i].getElementsByTagName('TD'); j < boxes.length; j++) {
+        // add the individual cell to this row's array
+        row.push(boxes[j])
+      }
+
+      // add this row's array to the master 'cells' array
+      board.push(row)
+    }
+
+    return board
+  }
+
+  // method to start a game
+  start() {
+    // a game starts with two tiles
+    this.newTile()
+    this.newTile()
+    // this means that keyboard inputs will be recognized
+    playing = true
+  }
+
+  // method to check if a new tile overlaps an already-existing one
+  // cannot use collide() because if the new tile overlaps one with the same value,
+  // // it shouldn't change the existing tile's value, and must check all tiles at once
+  overlap(position) {
+    // check each tile in the Board's list of tiles (which at this point does not include the tile)
+    for (let i = 0; i < this.tiles.length; i++) {
+      // if the tiles share a position
+      if (arraysEqual(position, this.tiles[i].getPosition()) === true) {
+        return true
+      }
+    }
+
+    // if the method gets to here, the new tile does not overlap any existing tiles
+    return false
+  }
+
+  // method to make a random new tile appear
+  newTile() {
+    // variables noting size of the board for easy access
+    let w = this.cells[0].length
+    let h = this.cells.length
+
+    // as long as there is space 
+    if (this.tiles.length < w * h) {
+      // generate a new tile
+      let tile = new Tile([random(h - 1), random(w - 1)])
+
+      // if this tile is where another tile already is
+      while (this.overlap(tile.getPosition()) === true) {
+        // generate a new tile, repeat
+        tile = new Tile([random(h - 1), random(w - 1)])
+      }
+
+      // show the new tile, and add it to the master array
+      tile.display(this)
+      this.tiles.push(tile)
+    }
+
+    // if there is not enough space on the board
+    else {
+      return false
+    }
+  }
+
+  // method to sort all tiles so that most 'extreme' tiles are first in a list
+  // 'extreme': furthest in the direction to be moved
+  // WHAT INPUTS DO/MEAN
+  // isHorizontal: if 1, will sort in a left-right paridigm, if 0 will sort up-down
+  // direction: if 1 will go right->left, down->up
+  sort(isHorizontal, direction) {
+    // initialize return variable
+    let sorted = []
+
+    // for 0->3 or 3->0, the current extreme number that tiles are being checked for
+    for (let i = (1.5 + (1.5 * direction)); i !== (1.5 - (2.5 * direction)); i -= direction) {
+      // check each tile
+      for (let j = 0; j < this.tiles.length; j++) {
+        // if this tile is in the row/column currently being checked for, add it to the back of the list
+        if (this.tiles[j].getPosition()[isHorizontal] === i) {
+          sorted.push(this.tiles[j])
+        }
+      }
+    }
+
+    return sorted
+  }
+
+  // method to move all tiles in a direction inputted by user
+  move(direction) {
+    // first, clear all tiles to remove imprints
+    for (let i = 0; i < this.tiles.length; i++) {
+      this.tiles[i].clear(this)
+    }
+
+    // initialize an array that will hold all the tiles sorted by 'extreme'ness
+    let sorted = []
+
+    // if the direction moving is horizontal, note that in the sort call
+    if (direction[0] === 0) {
+      sorted = this.sort(1, direction[1])
+    }
+
+    // likewise for verical movement
+    else {
+      sorted = this.sort(0, direction[0])
+    }
+
+    // while there are some tiles that have not completed moving
+    while (sorted.length > 0) {
+      // working with the most extreme tile
+      let extreme = sorted[0]
+      // variable that can be changed at any point to 'true' to note that tile is done moving
+      let del = false
+
+      // move the tile
+      extreme.move(direction)
+
+      // if the tile was moved off the board
+      if (extreme.offBoard(this.cells.length, this.cells[0].length) === true) {
+        // move it back and note that the tile is done moving
+        extreme.move([-direction[0], -direction[1]])
+        del = true
+      }
+
+      // check each other tile to see if the current tile bumped into it
+      for (let i = 0; i < this.tiles.length && del === false; i++) {
+        // run the collide method and store what it returns
+        let collide = extreme.collide(this.tiles[i])
+
+        // if the tile bumped into another of the same value
+        if (collide === 1) {
+          // remove the tile from the Board's master list of tiles, and note that it is done moving
+          this.tiles.splice(this.tiles.findIndex(function(tile) {
+            return tile === extreme
+          }), 1)
+          del = true
+        }
+
+        // if the tile bumped into another of a different value
+        if (collide === 2) {
+          // move the tile backwards and note that it is done moving
+          extreme.move([-direction[0], -direction[1]])
+          del = true
+        }
+      }
+
+      // if the tile is done moving, delete it from the list of active tiles
+      // reasons to be deleted: moving would go off board or collide with another tile
+      // reasons to not be deleted: moving went to an empty space
+      // if not deleted, then the tile will be selected again
+      // // (still the front of the list) and repeat this whole process over again
+      if (del === true) {
+        sorted.shift()
+      }
+    }
+
+    // once all tiles have moved, display all of them again
+    for (let i = 0; i < this.tiles.length; i++) {
+      this.tiles[i].display(this)
+    }
+
+    // make a new tile, but check if there is room left
+    if (this.newTile() === false) {
+      // if the board has run out of room, then note that no playing is to be done and tally the score
+      playing = false
+      document.getElementById('score').innerHTML = 'Congratulations, your score is ' + score
+    }
+  }
+}
+
+// function to give a random integer between 0 and a max number
+function random(max) {
+  return Math.floor(Math.random() * (max + 1))
+}
+
+// function to check if two arrays are equal to each other (this cannot be done with simple '=' because arrays are objects)
+function arraysEqual(arr1, arr2) {
+  // first check if the arrays are the same length - if not, then automatically not equal
+  if (arr1.length != arr2.length) {
+    return false
+  }
+
+  // then, check each element in the arrays for sameness
+  for (let i = 0; i < arr1.length; i++) {
+    // if not, then these arrays are not the same
+    if(arr1[i] != arr2[i]) {
+      return false
+    }
+  }
+
+  // if all conditions have been met, then these arrays are equal
+  return true
+}
+
+// when a key is pressed, this function runs
+// onkeydown() is used rather than onkeypress() because arrow keys are needed
+window.onkeydown = function(event) {
+  // check if the game is currently in session
+  if (playing === true) {
+    // save the key pressed in a shorter reference variable
+    let key = event.key
+
+    // call move() with the proper argument depending on the key pressed
+
+    if (key === 'ArrowUp') {
+      gameboard.move([-1, 0])
+    }
+
+    if (key === 'ArrowDown') {
+      gameboard.move([1, 0])
+    }
+    
+    if (key === 'ArrowRight') {
+      gameboard.move([0, 1])
+    }
+
+    if (key === 'ArrowLeft') {
+      gameboard.move([0, -1])
+    }
+  }
+}
+
+// when the page loads, this function runs
+window.onload = function() {
+  // make a new gameboard, and have it start the game
+  gameboard = new Board()
+  gameboard.start()
+}
