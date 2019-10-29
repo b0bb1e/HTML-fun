@@ -6,6 +6,7 @@
     <title>Pikachu 2048!</title>
     <link href='style.css' rel='stylesheet' type='text/css' />
   </head>
+
   <body>
     <script src='script.js'></script>
     
@@ -13,32 +14,59 @@
     <!-- updated whenever the player's score changes -->
     <h2 id='score'>Score: 0</h2>
 
-    <!-- the playing board - the tds have images put into them to display tiles -->
-    <table>
-      <tr>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-      </tr>
-      <tr>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-      </tr>
-      <tr>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-      </tr>
-      <tr>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-      </tr>
-    </table>
+    <!-- having an over-div allows a responsive layout -->
+    <div>
+      <!-- informational sidebar -->
+      <div class='sidebar left'>
+        <p>
+          Made by: Faith Okamoto<br>
+          All pictures are from pokemongohub.net, and are used for non-commercial purposes
+        </p>
+      </div>
+
+      <!-- the table is inside a div because it is easier to do layout on a div than a table -->
+      <div id='table'>
+        <!-- the playing board - the tds have images put into them to display tiles -->
+        <table>
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- sidebar with buttons -->
+      <div class='sidebar right'>
+        <button id='reset' type='button'>Restart</button>
+        <button id='show-dict' type='button'>Show Pikachu Dictionary</button>
+        
+        <!-- the dictionary is dynamically made in the script, because I am too lazy to write it out -->
+        <div id='dict'>
+        </div>
+      </div>
+    </div>
   </body>
 </html>
