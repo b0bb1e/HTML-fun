@@ -1,34 +1,121 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  text-align: center;
+}
+
+div {
+  display: inline-block;
+}
+
 /* styling the header */
 h1 {
-  text-align: center;
   background-color: yellow;
+}
+
+/* styles for all of the buttons */
+button {
+  border: 2px solid gray;
+  margin: 10px;
+  border-radius: 10px;
+  box-shadow: 0px 5px;
+  width: 50%;
+}
+
+button:hover {
+  filter: brightness(80%)
+}
+
+button:active {
+  box-shadow: 0px 0px;
+  position: relative;
+  top: 5px;
+}
+
+button:focus {
+  outline: 0;
 }
 
 /* forcing the cells evenly together */
 table {
   margin: auto;
   border-collapse: collapse;
+  table-layout: fixed;
 }
 
 tr {
-  height: 100px;
   padding: 0;
 }
 
 /* fixes the cells apart and uniform */
 td {
-  border: 5px solid black;
-  padding: 0;
+  height: 100px;
   width: 100px;
+  border: 5px solid black;
 }
 
 /* styling pikachu images inside the cells */
 td img {
-  width: 100%;
-  height: auto;
+  display: block;
+  width: 100px;
 }
 
-/* styling the score text */
-#score {
-  text-align: center;
+/* layout styles */
+.right {
+  float: right;
+}
+
+.left {
+  float: left;
+}
+
+.sidebar {
+  width: 25%;
+}
+
+#table {
+  width: 50%;
+}
+
+/* dictionary styles */
+#dict {
+  display: none;
+  width: 100%;
+}
+
+#dict div {
+  width: 25%
+}
+
+#dict div img {
+  width: 100%;
+}
+
+/* styles for specific buttons */
+
+#reset {
+  background-color: #D19ECB;
+}
+
+#show-dict {
+  background-color: #699DD1;
+}
+
+/* responsive layout stacking */
+@media (max-width: 1000px) {
+  #dict div{
+    width: 50%;
+  }
+}
+
+@media (max-width: 800px) {
+  .sidebar, #table{
+    width: 100%;
+  }
+
+  #dict div {
+    width: 50%;
+  }
 }
