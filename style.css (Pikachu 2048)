@@ -1,3 +1,5 @@
+/* basic layout styles */
+
 * {
   box-sizing: border-box;
 }
@@ -43,6 +45,8 @@ table {
   margin: auto;
   border-collapse: collapse;
   table-layout: fixed;
+  z-index: 0;
+  background-color: white;
 }
 
 tr {
@@ -77,6 +81,7 @@ td img {
 
 #table {
   width: 50%;
+  position: relative;
 }
 
 /* dictionary styles */
@@ -99,8 +104,22 @@ td img {
   background-color: #D19ECB;
 }
 
+#enable-swipe {
+  background-color:  rgba(207, 160, 73, 0.61);
+}
+
 #show-dict {
   background-color: #699DD1;
+}
+
+/* styling the arrow hint image*/
+#hint {
+  position: absolute;
+  display: none;
+  z-index: 1;
+  transform: translate(-50%, -175%);
+  width: 25%;
+  opacity: 0.5;
 }
 
 /* responsive layout stacking */
