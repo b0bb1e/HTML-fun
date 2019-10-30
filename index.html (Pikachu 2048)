@@ -4,7 +4,8 @@
     <meta charset='utf-8'>
     <meta name='viewport' content='width=device-width'>
     <title>Pikachu 2048!</title>
-    <link href='style.css' rel='stylesheet' type='text/css' />
+    <link href='style.css' rel='stylesheet' type='text/css'>
+    <link rel="icon" href="images/favicon.png">
   </head>
 
   <body>
@@ -20,7 +21,9 @@
       <div class='sidebar left'>
         <p>
           Made by: Faith Okamoto<br>
-          All pictures are from pokemongohub.net, and are used for non-commercial purposes
+          All pictures are from pokemongohub.net, and are used for non-commercial purposes<br>
+          NEW: swiping now works<br>
+          ϞϞ(๑⚈ ․̫ ⚈๑)∩
         </p>
       </div>
 
@@ -56,11 +59,15 @@
             <td></td>
           </tr>
         </table>
+
+        <!-- hint arrows can show up with this image, which is overlayed over the table's center-->
+        <img id='hint' src='images/arrows-vertical.png'>
       </div>
 
       <!-- sidebar with buttons -->
       <div class='sidebar right'>
         <button id='reset' type='button'>Restart</button>
+        <button id='enable-swipe' type='button'>Enable Swiping</button>
         <button id='show-dict' type='button'>Show Pikachu Dictionary</button>
         
         <!-- the dictionary is dynamically made in the script, because I am too lazy to write it out -->
