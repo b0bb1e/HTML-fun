@@ -8,6 +8,12 @@ var playing = false
 var score = 0
 // access strings for each pikachu picture, from smallest to largest value
 const pikachus = ['small-santa', 'small-witch', 'small-party', 'medium-santa', 'medium-witch', 'medium-party', 'medium-flower', 'medium-detective', 'large-santa', 'large-witch', 'large-party', 'large-flower', 'large-detective']
+// variables for swiping
+
+// where a touch started
+var lastTouch = [0, 0]
+// if swiping is enabled
+var swipeEnabled = false
 
 // Tile class: used by the Board class
 class Tile {
@@ -111,6 +117,8 @@ class Board {
     this.cells = this.setUpBoard()
     // the tiles that the board will use in play
     this.tiles = []
+    // the highest value attained by the player
+    this.highestValue = 0
   }
 
   // method to prepare an array containing all the tds in the table, organized by their trs
@@ -139,9 +147,15 @@ class Board {
     // a game starts with two tiles
     this.newTile()
     this.newTile()
+
+    // note the highest value present
+    this.highestValue = Math.max(this.tiles[0].getValue(), this.tiles[1].getValue())
     
     // this means that keyboard inputs will be recognized
     playing = true
+
+    // reset the gameboard background to indicate that the game is currently active
+    document.getElementsByTagName('table')[0].style.backgroundColor = 'white'
   }
 
   // method to check if a new tile overlaps an already-existing one
@@ -211,7 +225,7 @@ class Board {
     return sorted
   }
 
-   // method to move a single given tile in a given direction
+  // method to move a single given tile in a given direction
   moveTile(tile, direction) {
     // variable that can be changed at any point to 'true' to note that tile is done moving
     let done = false
@@ -233,6 +247,13 @@ class Board {
 
       // if the tile bumped into another of the same value
       if (collide === 1) {
+        // if the new tile has a new highest value
+        if (tile.getValue() * 2 > this.highestValue) {
+          // record it in the score area and for the Board
+          this.highestValue = tile.getValue() * 2
+          document.getElementById('score').innerHTML = 'You got to ' + this.highestValue + '!'
+        }
+
         // remove the tile from the Board's master list of tiles, and note that it is done moving
         this.tiles.splice(this.tiles.findIndex(function(check) {return check === tile}), 1)
         done = true
@@ -250,10 +271,63 @@ class Board {
     return done
   }
 
+  // method to return a tile at a certain position
+  getTileWithPosition(position) {
+    // check each tile
+    for (let i = 0; i < this.tiles.length; i++) {
+      // if it is in the desired position, return it
+      if (arraysEqual(this.tiles[i].getPosition(), position) === true) {
+        return this.tiles[i]
+      }
+    }
+
+    // otherwise, no tile is in the inputted position
+    return false
+  }
+
+  // method to check if there is a move available, only called when the board is full
+  movesAvailable() {
+    // checking for possible horizontal moves
+
+    // check each row
+    for (let i = 0; i < this.cells.length; i++) {
+      // check each column excluding the last one
+      for (let j = 0; j < this.cells[i].length - 1; j++) {
+        // checks a tile in the row & column specified, and then the one in the row specified and next column
+        // if the two tiles next to each other in this row have the same value
+        if (this.getTileWithPosition([i, j]).getValue() === this.getTileWithPosition([i, j + 1]).getValue()) {
+          // note that move horizontally is possible
+          return 'horizontal'
+        }
+      }
+    }
+
+    // checking for possible veritical moves
+
+    // check each column
+    for (let i = 0; i < this.cells[0].length; i++) {
+      // check each row excluding the last one
+      for (let j = 0; j < this.cells.length - 1; j++) {
+        // checks a tile in the row & column specified, and then the one in the next row and the column specified
+        // if the two tiles next to each other in this column have the same value
+        if (this.getTileWithPosition([j, i]).getValue() === this.getTileWithPosition([j + 1, i]).getValue()) {
+          // note that move horixontally is possible
+          return 'vertical'
+        }
+      }
+    }
+
+    // if the method is at this point, no moves are possible
+    return false
+  }
+
   // method to move all tiles in a direction inputted by user
   move(direction) {
     // store the current positions of all of the tiles
     let oldPos = this.getPositions()
+
+    // reset the hint arrows if they are showing
+    document.getElementById('hint').style.display = 'none'
 
     // first, clear all tiles to remove imprints
     for (let i = 0; i < this.tiles.length; i++) {
@@ -292,13 +366,29 @@ class Board {
 
     // if there is no room left on the board
     if (this.tiles.length === this.cells.length * this.cells[0].length) {
-      // if so, stop accepting move inputs and change the score to signify that
-      playing = false
-      document.getElementById('score').innerHTML = 'Congratulations, your score is ' + score
+      // check if there are moves available
+      let avail = this.movesAvailable()
+
+      // if no moves are available
+      if (avail === false) {
+        // stop accepting move inputs and change the score to signify that
+        playing = false
+        document.getElementById('score').innerHTML = 'Congratulations, your score is ' + score
+        
+        // change the gameboard to a gray background to give a visual signal
+        document.getElementsByTagName('table')[0].style.backgroundColor = 'lightgray'
+      }
+      
+      // or if there are moves available
+      else {
+        // display the proper arrow
+        document.getElementById('hint').src = 'images/arrows-' + avail + '.png'
+        document.getElementById('hint').style.display = 'inline'
+      }
     }
 
     // if the tiles have moved
-    // /// (this would not trigger if there were no moves left, but the if statement above covers that case)
+    // /// (this would not trigger if the board is full, but the if statement above covers that case)
     if (arraysEqual(oldPos, this.getPositions()) === false) {
       // generate a new tile
       this.newTile()
@@ -376,7 +466,7 @@ function makeDict() {
   }
 }
 
-// onclick fucntion for the reset button
+// onclick function for the reset button
 var reset = function() {
   // reset the board
   gameboard.clear()
@@ -387,6 +477,23 @@ var reset = function() {
 
   // start a new game
   gameboard.start()
+}
+
+// onclick function for the enable/disable swiping toggle button
+var enableSwipe = function() {
+  // check the current state and change it to the opposite one
+
+  if (this.innerHTML === 'Enable Swiping') {
+    // enables swiping
+    swipeEnabled = true
+    this.innerHTML = 'Disable Swiping'
+  }
+
+  else if (this.innerHTML === 'Disable Swiping') {
+    // disables swiping
+    swipeEnabled = false
+    this.innerHTML = 'Enable Swiping'
+  }
 }
 
 // onlick function for the show/hide dictionary toggle button
@@ -434,6 +541,55 @@ window.onkeydown = function(event) {
   }
 }
 
+// when a key is pressed, this listener activates
+window.addEventListener('keydown', function(event) {
+  // reference variable
+  let key = event.key
+
+  // if the game is currently in session and an up/down arrow key was pressed
+  if(playing === true && (key === 'ArrowDown' || key === 'ArrowUp')) {
+    // prevent the window from scrolling during play
+    event.preventDefault();
+  }
+}, false)
+
+// when a touch is detected to have started, this listener activates
+window.addEventListener('touchstart', function(event) {
+  // if swiping is enabled
+  if (swipeEnabled === true) {
+    // save the position that the swipe starts at
+    lastTouch = [event.changedTouches[0].pageX, event.changedTouches[0].pageY]
+  }
+}, false)
+
+
+// when a touch is detected to have ended, this listener activates
+window.addEventListener('touchend', function(event) {
+  // if swiping is enabled
+  if (swipeEnabled === true) {
+    // reference variable for the vector (x and y movement) of the swipe
+    let movement = [lastTouch[0] - event.changedTouches[0].pageX, lastTouch[1] - event.changedTouches[0].pageY]
+
+    // if there is significant movement in one direction and not the other, call move() with the proper arguments
+
+    if (movement[1] > 50 && Math.abs(movement[0]) < 50) {
+      gameboard.move([-1, 0])
+    }
+
+    else if (movement[1] < -50 && Math.abs(movement[0]) < 50) {
+      gameboard.move([1, 0])
+    }
+
+    else if (movement[0] < -50 && Math.abs(movement[1]) < 50) {
+      gameboard.move([0, 1])
+    }
+
+    else if (movement[0] > 50 && Math.abs(movement[1]) < 50) {
+      gameboard.move([0, -1])
+    }
+  }
+}, false)
+
 // when the page loads, this function runs
 window.onload = function() {
   // make a new gameboard, and have it start the game
@@ -445,5 +601,6 @@ window.onload = function() {
 
   // set onclick for the buttons
   document.getElementById('reset').onclick = reset
+  document.getElementById('enable-swipe').onclick = enableSwipe
   document.getElementById('show-dict').onclick = showDict
 }
